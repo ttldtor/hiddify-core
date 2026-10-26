@@ -3,6 +3,7 @@ package hcore
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/hiddify/hiddify-core/v2/config"
@@ -38,6 +39,10 @@ func BuildConfig(ctx context.Context, in *StartRequest) (*option.Options, error)
 		// Log(LogLevel_DEBUG, LogType_CORE, "Building config ", string(hcontent))
 		// Log(LogLevel_DEBUG, LogType_CORE, "Building config ")
 		return config.BuildConfig(ctx, static.HiddifyOptions, readOpt)
+	}
+	if C.IsWindows && static.HiddifyOptions != nil && (static.HiddifyOptions.EnableTun || static.HiddifyOptions.EnableTunService) &&
+		static.HiddifyOptions.WindowsAppRouting != nil && static.HiddifyOptions.WindowsAppRouting.Enabled {
+		return nil, fmt.Errorf("windows-app-routing requires the generated configuration; raw configuration is not supported")
 	}
 	return config.ReadSingOptions(ctx, readOpt)
 

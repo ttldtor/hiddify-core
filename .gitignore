@@ -17,3 +17,4 @@ node_modules
 *.db
 *.json
 **/*_test.go
+!v2/config/windows_app_routing_test.go

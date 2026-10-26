@@ -25,28 +25,19 @@ type HiddifyOptions struct {
 	// GeoSitePath      string      `json:"geosite-path"`
 	Rules []Rule `json:"rules,omitempty" overridable:"true"`
 	// the app's rule list; when set it replaces block-ads, bypass-lan and the region rules
-	RouteRule *RouteRuleOptions `json:"route-rule,omitempty"`
-	Warp      WarpOptions       `json:"warp,omitempty"`
-	Warp2     WarpOptions       `json:"warp2,omitempty"`
-	Mux       MuxOptions        `json:"mux,omitempty" overridable:"true"`
-	TLSTricks TLSTricks         `json:"tls-tricks,omitempty"`
-	EnableNTP bool              `json:"enable-ntp,omitempty"`
+	RouteRule         *RouteRuleOptions         `json:"route-rule,omitempty"`
+	WindowsAppRouting *WindowsAppRoutingOptions `json:"windows-app-routing,omitempty"`
+	Warp              WarpOptions               `json:"warp,omitempty"`
+	Warp2             WarpOptions               `json:"warp2,omitempty"`
+	Mux               MuxOptions                `json:"mux,omitempty" overridable:"true"`
+	TLSTricks         TLSTricks                 `json:"tls-tricks,omitempty"`
+	EnableNTP         bool                      `json:"enable-ntp,omitempty"`
 
 	DNSOptions
 	InboundOptions
 	URLTestOptions
 	RouteOptions
 	ChainOptions
-}
-
-type DNSOptions struct {
-	RemoteDnsAddress        string                `json:"remote-dns-address,omitempty" overridable:"true"`
-	RemoteDnsDomainStrategy option.DomainStrategy `json:"remote-dns-domain-strategy,omitempty" overridable:"true"`
-	DirectDnsAddress        string                `json:"direct-dns-address,omitempty" overridable:"true"`
-	DirectDnsDomainStrategy option.DomainStrategy `json:"direct-dns-domain-strategy,omitempty" overridable:"true"`
-	IndependentDNSCache     bool                  `json:"independent-dns-cache,omitempty"`
-	EnableFakeDNS           bool                  `json:"enable-fake-dns,omitempty"`
-	// EnableDNSRouting        bool                  `json:"enable-dns-routing,omitempty"`
 }
 
 type InboundOptions struct {

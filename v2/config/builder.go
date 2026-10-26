@@ -45,7 +45,6 @@ const (
 	OutboundRoundRobinTag     = "balance"
 	OutboundDirectFragmentTag = "direct-fragment §hide§"
 
-	InboundTUNTag    = "tun-in"
 	InboundMixedTag  = "mixed-in"
 	InboundTProxy    = "tproxy-in"
 	InboundRedirect  = "redirect-in"
@@ -60,6 +59,16 @@ var (
 
 // TODO include selectors
 func BuildConfig(ctx context.Context, hopts *HiddifyOptions, inputOpt *ReadOptions) (*option.Options, error) {
+	appRouting, err := newWindowsAppRouting(hopts.WindowsAppRouting, C.IsWindows, hopts.EnableTun || hopts.EnableTunService)
+	if err != nil {
+		return nil, err
+	}
+	if appRouting != nil {
+		// Builder adjustments must not overwrite the user's stored DNS preferences.
+		effective := *hopts
+		effective.DNSOptions = appRouting.effectiveDNSOptions(hopts.DNSOptions)
+		hopts = &effective
+	}
 
 	input, err := ReadSingOptions(ctx, inputOpt)
 	if err != nil {
@@ -544,7 +553,11 @@ func setInbound(options *option.Options, hopt *HiddifyOptions) {
 }
 
 func setRoutingOptions(options *option.Options, hopt *HiddifyOptions) error {
-	dnsRules := []option.DefaultDNSRule{}
+	appRouting, err := newWindowsAppRouting(hopt.WindowsAppRouting, C.IsWindows, hopt.EnableTun || hopt.EnableTunService)
+	if err != nil {
+		return err
+	}
+	dnsRules := appRouting.dnsRules(DNSMultiRemoteTag, DNSMultiDirectTag, hopt.DNSOptions)
 	routeRules := []option.Rule{}
 	rulesets := []option.RuleSet{}
 
@@ -612,6 +625,8 @@ func setRoutingOptions(options *option.Options, hopt *HiddifyOptions) error {
 			},
 		},
 	})
+
+	routeRules = append(routeRules, appRouting.routeRules(OutboundMainDetour, OutboundDirectTag)...)
 
 	routeRules = append(routeRules, option.Rule{
 		Type: C.RuleTypeDefault,
@@ -983,7 +998,7 @@ func setRoutingOptions(options *option.Options, hopt *HiddifyOptions) error {
 		},
 		// OverrideAndroidVPN: hopt.EnableTun && C.IsAndroid,
 		RuleSet:     rulesets,
-		FindProcess: false,
+		FindProcess: appRouting != nil,
 		// GeoIP: &option.GeoIPOptions{
 		// 	Path: opt.GeoIPPath,
 		// },
